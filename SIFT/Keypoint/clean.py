@@ -30,68 +30,12 @@ def deduplicate_keypoints(keypoints):
             unique.append(keypoint)
     return unique
 
-def postsolve_keypoints(keypoints, ratio):
+def postsolve_keypoints(keypoints):
     '''recover original input size: say base ratio=2, recover ratio=0.5'''
     ret = []
-    ratio = 1.0 / ratio
     for keypoint in keypoints:
-        keypoint.pt = tuple(ratio * array(keypoint.pt))
-        keypoint.size *= ratio
+        keypoint.pt = tuple(0.5 * array(keypoint.pt))
+        keypoint.size *= 0.5
         keypoint.octave = (keypoint.octave & ~255) | ((keypoint.octave-1) & 255) 
         ret.append(keypoint)
     return ret
-
-##############################
-# Duplicate keypoint removal #
-##############################
-
-def compareKeypoints(keypoint1, keypoint2):
-    """Return True if keypoint1 is less than keypoint2
-    """
-    if keypoint1.pt[0] != keypoint2.pt[0]:
-        return keypoint1.pt[0] - keypoint2.pt[0]
-    if keypoint1.pt[1] != keypoint2.pt[1]:
-        return keypoint1.pt[1] - keypoint2.pt[1]
-    if keypoint1.size != keypoint2.size:
-        return keypoint2.size - keypoint1.size
-    if keypoint1.angle != keypoint2.angle:
-        return keypoint1.angle - keypoint2.angle
-    if keypoint1.response != keypoint2.response:
-        return keypoint2.response - keypoint1.response
-    if keypoint1.octave != keypoint2.octave:
-        return keypoint2.octave - keypoint1.octave
-    return keypoint2.class_id - keypoint1.class_id
-
-def removeDuplicateKeypoints(keypoints):
-    """Sort keypoints and remove duplicate keypoints
-    """
-    if len(keypoints) < 2:
-        return keypoints
-
-    keypoints.sort(key=cmp_to_key(compareKeypoints))
-    unique_keypoints = [keypoints[0]]
-
-    for next_keypoint in keypoints[1:]:
-        last_unique_keypoint = unique_keypoints[-1]
-        if last_unique_keypoint.pt[0] != next_keypoint.pt[0] or \
-           last_unique_keypoint.pt[1] != next_keypoint.pt[1] or \
-           last_unique_keypoint.size != next_keypoint.size or \
-           last_unique_keypoint.angle != next_keypoint.angle:
-            unique_keypoints.append(next_keypoint)
-    return unique_keypoints
-
-#############################
-# Keypoint scale conversion #
-#############################
-
-def convertKeypointsToInputImageSize(keypoints, ratio):
-    """Convert keypoint point, size, and octave to input image size
-    """
-    ratio = 1.0 / ratio
-    converted_keypoints = []
-    for keypoint in keypoints:
-        keypoint.pt = tuple(ratio * array(keypoint.pt))
-        keypoint.size *= ratio
-        keypoint.octave = (keypoint.octave & ~255) | ((keypoint.octave - 1) & 255)
-        converted_keypoints.append(keypoint)
-    return converted_keypoints
