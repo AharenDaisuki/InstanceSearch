@@ -23,6 +23,11 @@ DATASET_PATH = '/Users/lixiaoyang/Desktop/CS4186/ass1/datasets_4186'
 QUERY_DIR = '/query_4186'
 DATA_DIR = '/gallery_4186'
 GT_DIR = '/query_txt_4186'
+DES_DIR = '/descriptors'
+COL_DIR = '/color'
+RET_DIR = '/result'
+LBP_RET_DIR = '/lbp_res'
+LBP_DIR = '/lbp'
 # all queries
 QUERIES = [27,35,316,776,1258,
         1656,1709,2032,2040,2176,
