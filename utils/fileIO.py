@@ -1,6 +1,8 @@
 from utils.params import *
 from utils.visualization import *
 from utils.fileIO import *
+from utils.matchUtils import *
+from lbp.lbpFeature import get_lbp
 from SIFT.Interface.getKeypointsDescriptors import get_keypoints_descriptors
 import sys
 

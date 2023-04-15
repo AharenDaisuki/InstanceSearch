@@ -5,20 +5,20 @@ from utils.fileIO import *
 from utils.matchUtils import *
 from functools import cmp_to_key
 
-def match(des1, des2):
-    timer = Timer(name='matching')
-    index_params = dict(algorithm=0, trees=5)
-    search_params = dict(checks=50)
-    flann = FlannBasedMatcher(index_params, search_params)
+def match(des1, des2, flann):
+    # timer = Timer(name='matching')
+    # index_params = dict(algorithm=0, trees=5)
+    # search_params = dict(checks=50)
+    # flann = FlannBasedMatcher(index_params, search_params)
     matches = flann.knnMatch(des1, des2, k=2)
 
     # ratio test
     good = 0
     for i, j in matches:
-        print(i.distance, j.distance)
+        # print(i.distance, j.distance)
         if i.distance < 0.7 * j.distance:
             good += 1
-    timer.tac()        
+    # timer.tac()        
     return good
 
 def match_main():

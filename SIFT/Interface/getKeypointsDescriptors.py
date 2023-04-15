@@ -34,7 +34,7 @@ DEBUG_MODE = 1
 def get_keypoints_descriptors(image, sigma=SIGMA_ZERO, scale_n=SCALE_N, assumed_blur=1, image_border_width=5):
     """Compute SIFT keypoints and descriptors for an input image
     """
-    timer = Timer('generating descriptors')
+    # timer = Timer('generating descriptors')
 
     image = image.astype('float32')
     base_image = get_img_base(image, sigma, assumed_blur)
@@ -45,12 +45,12 @@ def get_keypoints_descriptors(image, sigma=SIGMA_ZERO, scale_n=SCALE_N, assumed_
     keypoints = findScaleSpaceExtrema(gaussian_images, dog_images, scale_n-3, sigma, image_border_width)
     keypoints = deduplicate_keypoints(keypoints)
     keypoints = postsolve_keypoints(keypoints)
-    if DEBUG_MODE:
-        for keypoint in keypoints:
-            print(keypoint.pt)
+    # if DEBUG_MODE:
+    #     for keypoint in keypoints:
+    #         print(keypoint.pt)
     descriptors = generateDescriptors(keypoints, gaussian_images)
     if DEBUG_MODE:
         for descriptor in descriptors:
             print(descriptor)
-    timer.tac()    
+    # timer.tac()    
     return keypoints, descriptors

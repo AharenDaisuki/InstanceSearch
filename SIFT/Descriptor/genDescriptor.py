@@ -3,8 +3,6 @@ from numpy.linalg import norm
 from utils.params import FLOAT_TOLERANCE
 
 def unpackOctave(keypoint):
-    """Compute octave, layer, and scale from a keypoint
-    """
     octave = keypoint.octave & 255
     layer = (keypoint.octave >> 8) & 255
     if octave >= 128:
@@ -13,8 +11,6 @@ def unpackOctave(keypoint):
     return octave, layer, scale
 
 def generateDescriptors(keypoints, gaussian_images, window_width=4, num_bins=8, scale_multiplier=3, descriptor_max_value=0.2):
-    """Generate descriptors for each keypoint
-    """
     descriptors = []
 
     for keypoint in keypoints:
@@ -31,12 +27,10 @@ def generateDescriptors(keypoints, gaussian_images, window_width=4, num_bins=8, 
         col_bin_list = []
         magnitude_list = []
         orientation_bin_list = []
-        histogram_tensor = zeros((window_width + 2, window_width + 2, num_bins))   # first two dimensions are increased by 2 to account for border effects
-
-        # Descriptor window size (described by half_width) follows OpenCV convention
+        histogram_tensor = zeros((window_width + 2, window_width + 2, num_bins))   
         hist_width = scale_multiplier * 0.5 * scale * keypoint.size
-        half_width = int(round(hist_width * sqrt(2) * (window_width + 1) * 0.5))   # sqrt(2) corresponds to diagonal length of a pixel
-        half_width = int(min(half_width, sqrt(num_rows ** 2 + num_cols ** 2)))     # ensure half_width lies within image
+        half_width = int(round(hist_width * sqrt(2) * (window_width + 1) * 0.5))   
+        half_width = int(min(half_width, sqrt(num_rows ** 2 + num_cols ** 2)))    
 
         for row in range(-half_width, half_width + 1):
             for col in range(-half_width, half_width + 1):

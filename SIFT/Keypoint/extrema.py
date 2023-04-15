@@ -2,9 +2,6 @@ from utils.params import FLOAT_TOLERANCE
 from numpy import floor, array, stack, dot, trace, float32, zeros, sqrt, arctan2, rad2deg, deg2rad, exp, logical_and, roll, where
 from numpy.linalg import det, lstsq
 from cv2 import KeyPoint
-import logging
-
-logger = logging.getLogger(__name__)
 
 # def get_gradient(pixel_array):
 #     '''approximate gradient at center pixel [1,1,1], where dx = [f(x+h)-f(x-h)] / 2h 
@@ -85,7 +82,6 @@ def localizeExtremumViaQuadraticFit(i, j, image_index, octave_index, num_interva
     extremum_is_outside_image = False
     image_shape = dog_images_in_octave[0].shape
     for attempt_index in range(num_attempts_until_convergence):
-        # need to convert from uint8 to float32 to compute derivatives and need to rescale pixel values to [0, 1] to apply Lowe's thresholds
         first_image, second_image, third_image = dog_images_in_octave[image_index-1:image_index+2]
         pixel_cube = stack([first_image[i-1:i+2, j-1:j+2],
                             second_image[i-1:i+2, j-1:j+2],
@@ -112,24 +108,21 @@ def localizeExtremumViaQuadraticFit(i, j, image_index, octave_index, num_interva
         xy_hessian_trace = trace(xy_hessian)
         xy_hessian_det = det(xy_hessian)
         if xy_hessian_det > 0 and eigenvalue_ratio * (xy_hessian_trace ** 2) < ((eigenvalue_ratio + 1) ** 2) * xy_hessian_det:
-            # Contrast check passed -- construct and return OpenCV KeyPoint object
             keypoint = KeyPoint()
             keypoint.pt = ((j + extremum_update[0]) * (2 ** octave_index), (i + extremum_update[1]) * (2 ** octave_index))
             keypoint.octave = octave_index + image_index * (2 ** 8) + int(round((extremum_update[2] + 0.5) * 255)) * (2 ** 16)
-            keypoint.size = sigma * (2 ** ((image_index + extremum_update[2]) / float32(num_intervals))) * (2 ** (octave_index + 1))  # octave_index + 1 because the input image was doubled
+            keypoint.size = sigma * (2 ** ((image_index + extremum_update[2]) / float32(num_intervals))) * (2 ** (octave_index + 1))  
             keypoint.response = abs(functionValueAtUpdatedExtremum)
             return keypoint, image_index
     return None
 
 def computeGradientAtCenterPixel(pixel_array):
-    """Approximate gradient at center pixel [1, 1, 1] of 3x3x3 array using central difference formula of order O(h^2), where h is the step size"""
     dx = 0.5 * (pixel_array[1, 1, 2] - pixel_array[1, 1, 0])
     dy = 0.5 * (pixel_array[1, 2, 1] - pixel_array[1, 0, 1])
     ds = 0.5 * (pixel_array[2, 1, 1] - pixel_array[0, 1, 1])
     return array([dx, dy, ds])
 
 def computeHessianAtCenterPixel(pixel_array):
-    """Approximate Hessian at center pixel [1, 1, 1] of 3x3x3 array using central difference formula of order O(h^2), where h is the step size"""
     center_pixel_value = pixel_array[1, 1, 1]
     dxx = pixel_array[1, 1, 2] - 2 * center_pixel_value + pixel_array[1, 1, 0]
     dyy = pixel_array[1, 2, 1] - 2 * center_pixel_value + pixel_array[1, 0, 1]
@@ -142,13 +135,10 @@ def computeHessianAtCenterPixel(pixel_array):
                   [dxs, dys, dss]])
 
 def computeKeypointsWithOrientations(keypoint, octave_index, gaussian_image, radius_factor=3, num_bins=36, peak_ratio=0.8, scale_factor=1.5):
-    """Compute orientations for each keypoint
-    """
-    logger.debug('Computing keypoint orientations...')
     keypoints_with_orientations = []
     image_shape = gaussian_image.shape
 
-    scale = scale_factor * keypoint.size / float32(2 ** (octave_index + 1))  # compare with keypoint.size computation in localizeExtremumViaQuadraticFit()
+    scale = scale_factor * keypoint.size / float32(2 ** (octave_index + 1))  
     radius = int(round(radius_factor * scale))
     weight_factor = -0.5 / (scale ** 2)
     raw_histogram = zeros(num_bins)
@@ -164,7 +154,7 @@ def computeKeypointsWithOrientations(keypoint, octave_index, gaussian_image, rad
                     dy = gaussian_image[region_y - 1, region_x] - gaussian_image[region_y + 1, region_x]
                     gradient_magnitude = sqrt(dx * dx + dy * dy)
                     gradient_orientation = rad2deg(arctan2(dy, dx))
-                    weight = exp(weight_factor * (i ** 2 + j ** 2))  # constant in front of exponential can be dropped because we will find peaks later
+                    weight = exp(weight_factor * (i ** 2 + j ** 2))
                     histogram_index = int(round(gradient_orientation * num_bins / 360.))
                     raw_histogram[histogram_index % num_bins] += weight * gradient_magnitude
 
